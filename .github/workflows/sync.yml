@@ -3,7 +3,7 @@ name: Sync PiliPlus Source
 on:
   schedule:
     - cron: "0 */2 * * *" # 每 2 小时自动轮询一次
-  workflow_dispatch:      # 允许随时在网页上手动一键触发
+  workflow_dispatch:      # 支持手动一键触发
 
 concurrency:
   group: sync-piliplus
@@ -14,17 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+        uses: actions/checkout@v6
 
       - name: Run Update Script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python update.py
+        run: python3 update.py
 
       - name: Commit and Push if Changed
         run: |
