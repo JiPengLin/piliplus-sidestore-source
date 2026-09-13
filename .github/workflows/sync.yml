@@ -1,0 +1,39 @@
+name: Sync PiliPlus Source
+
+on:
+  schedule:
+    - cron: "0 */2 * * *" # 每 2 小时自动轮询一次
+  workflow_dispatch:      # 允许随时在网页上手动一键触发
+
+concurrency:
+  group: sync-piliplus
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Run Update Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python update.py
+
+      - name: Commit and Push if Changed
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add apps.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: auto-update apps.json"
+            git push
+          else
+            echo "版本无变动，跳过提交。"
+          fi
