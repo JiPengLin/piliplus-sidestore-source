@@ -2,29 +2,37 @@ import os
 import re
 import json
 import urllib.request
-from datetime import datetime, timezone
 
 SOURCE_REPO = "bggRGjQaUbCoE/PiliPlus"
 OUTPUT_FILE = "apps.json"
 
 REPO_NAME = "PiliPlus Source"
 REPO_IDENTIFIER = "com.custom.piliplus.source"
+REPO_WEBSITE = "https://github.com/bggRGjQaUbCoE/PiliPlus"
+
 APP_NAME = "PiliPlus"
-# 修正为官方真实的 iOS Bundle ID
+# 官方真实的 iOS Bundle ID
 APP_BUNDLE_ID = "com.example.piliplus"
 APP_DEVELOPER = "bggRGjQaUbCoE"
 APP_SUBTITLE = "第三方 Bilibili 客户端"
-APP_DESCRIPTION = "PiliPlus iOS 客户端，基于 GitHub Releases 自动构建与同步"
-APP_ICON_URL = "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/images/logo.png"
-APP_TINT_COLOR = "#00A1D6"
+APP_DESCRIPTION = "PiliPlus iOS 客户端，基于 GitHub Releases 自动同步"
+# 修正路径：补全 logo/ 目录
+APP_ICON_URL = "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/images/logo/logo.png"
+APP_TINT_COLOR = "#00AEEF"
 APP_MIN_OS = "14.0"
+
+# 补充应用预览截图（SideStore 详情页轮播展示）
+APP_SCREENSHOTS = [
+    "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/screenshots/510shots_so.png",
+    "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/screenshots/174shots_so.png",
+    "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/screenshots/850shots_so.png"
+]
 
 def extract_build_version(filename: str) -> str:
     match = re.search(r"\+(\d+)\.ipa$", filename, re.IGNORECASE)
     return match.group(1) if match else ""
 
 def parse_semver(ver_str: str) -> list[int]:
-    # 将版本号提取为数字数组，防止字典序排序 Bug (如 2.1.10 < 2.1.2)
     return [int(x) for x in re.findall(r"\d+", ver_str)]
 
 def fetch_releases() -> list[dict]:
@@ -93,7 +101,6 @@ def main():
         print("未抓取到有效版本，跳过更新。")
         return
 
-    # 正确的语义化版本排序：由新到旧
     versions.sort(key=lambda v: (parse_semver(v["version"]), int(v.get("buildVersion", 0))), reverse=True)
     news.sort(key=lambda n: n["date"], reverse=True)
 
@@ -103,6 +110,7 @@ def main():
         "subtitle": "PiliPlus 自动更新源",
         "description": "专为 SideStore 与 LiveContainer 适配的订阅源",
         "iconURL": APP_ICON_URL,
+        "website": REPO_WEBSITE,
         "tintColor": APP_TINT_COLOR,
         "apps": [
             {
@@ -112,6 +120,7 @@ def main():
                 "subtitle": APP_SUBTITLE,
                 "localizedDescription": APP_DESCRIPTION,
                 "iconURL": APP_ICON_URL,
+                "screenshots": APP_SCREENSHOTS,  # 补上截图数组
                 "tintColor": APP_TINT_COLOR,
                 "versions": versions
             }
